@@ -8,15 +8,13 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  security-events: write
+  security-events: write # Critical for "Open Source" scans in Security Tab
+  actions: read # Required for workflow telemetry
 
 jobs:
   scan-and-fix:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      # CALLS YOUR CENTRAL AGENT REPO
       - name: Run Central Security Agent
         uses: Ethriva/security-core@main
         with:
@@ -25,16 +23,19 @@ jobs:
           azure-deployment-name: ${{ secrets.AZURE_DEPLOYMENT_NAME }}
           gh-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # --- OPEN SOURCE THE SCANS ---
+      # The python script generated .sarif files in target-repo directory
+
       - name: Upload Semgrep Results
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: semgrep.sarif
+          sarif_file: target-repo/semgrep.sarif
           category: semgrep
 
       - name: Upload Trivy Results
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: trivy.sarif
+          sarif_file: target-repo/trivy.sarif
           category: trivy
