@@ -21,7 +21,7 @@ jobs:
           azure-endpoint: ${{ secrets.AZURE_AI_ENDPOINT }}
           azure-key: ${{ secrets.AZURE_AI_KEY }}
           azure-deployment-name: ${{ secrets.AZURE_DEPLOYMENT_NAME }}
-          gh-token: ${{ secrets.GITHUB_TOKEN }}
+          gh-token: ${{ secrets.GH_PAT }}
 
       # --- OPEN SOURCE THE SCANS ---
       # The python script generated .sarif files in target-repo directory
