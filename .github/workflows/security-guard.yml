@@ -1,0 +1,40 @@
+name: Security Guard
+on:
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 0 * * 0' # Weekly scan
+
+permissions:
+  contents: write
+  pull-requests: write
+  security-events: write
+
+jobs:
+  scan-and-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # CALLS YOUR CENTRAL AGENT REPO
+      - name: Run Central Security Agent
+        uses: Ethriva/security-core@main
+        with:
+          azure-endpoint: ${{ secrets.AZURE_AI_ENDPOINT }}
+          azure-key: ${{ secrets.AZURE_AI_KEY }}
+          azure-deployment-name: ${{ secrets.AZURE_DEPLOYMENT_NAME }}
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Semgrep Results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+      - name: Upload Trivy Results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy.sarif
+          category: trivy
